@@ -12,6 +12,8 @@ RELEASES="sid jessie wheezy trusty utopic"
 RELEASES="sid jessie wheezy trusty"
 RELEASES="$CURRENT_RELEASE"
 
+LOCALREPOURL=http://localhost/localrepo
+
 sbuild_deps(){
 	if ! getent group sbuild > /dev/null
 	then
@@ -124,7 +126,7 @@ mkbuild_add(){
 	RELEASE=$1
 	ARCH=$(dpkg --print-architecture)
 	MIRROR=$(get_local_mirror_by_release $RELEASE)
-	curl -s http://localhost/localrepo/botkey.gpg |\
+	curl -s $LOCALREPOURL/botkey.gpg |\
 		sudo schroot -c source:$RELEASE-$ARCH -u root apt-key add -
 	sudo schroot -c source:$RELEASE-$ARCH -u root -- /bin/sh -c "echo \"deb $MIRROR $RELEASE main\" > /etc/apt/sources.list.d/localrepo-$RELEASE.list"
 	#sudo schroot -c source:$RELEASE-$ARCH -u root apt-get update
