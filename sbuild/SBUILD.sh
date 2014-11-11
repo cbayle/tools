@@ -63,10 +63,10 @@ get_local_mirror_by_release(){
 	RELEASE=$1
 	case $RELEASE in
 		sid|jessie|wheezy)
-			echo http://localhost/localrepo/debian
+			echo $LOCALREPOURL/debian
 		;;
 		trusty|utopic)
-			echo http://localhost/localrepo/ubuntu
+			echo $LOCALREPOURL/ubuntu
 		;;
 	esac
 }
