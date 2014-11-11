@@ -1,16 +1,18 @@
 #! /bin/sh
+CURRENT_RELEASE=$(lsb_release -sc)
+CURRENT_DISTRIB=$(lsb_release -si|tr '[A-Z]' '[a-z]')
+CURRENT_ARCH=$(dpkg --print-architecture)
+
 DEBMIRROR=http://cdn.debian.net/debian
 UBUMIRROR=http://archive.ubuntu.com/ubuntu
 DEBCOMPONENTS="main"
 UBUCOMPONENTS="main,universe"
-CURRENT_ARCH=amd64
-DEBDIST=wheezy
-UBUDIST=trusty
-DISTS="sid jessie wheezy trusty utopic"
-DISTS="sid jessie wheezy trusty"
-DISTS="wheezy"
 
-sbuild_prepare(){
+RELEASES="sid jessie wheezy trusty utopic"
+RELEASES="sid jessie wheezy trusty"
+RELEASES="$CURRENT_RELEASE"
+
+sbuild_deps(){
 	if ! getent group sbuild > /dev/null
 	then
 		sudo apt-get -y install sbuild
@@ -19,7 +21,7 @@ sbuild_prepare(){
 	#sbuild_group_id=$(getent group sbuild | cut -d: -f3)
 }
 
-mkbuild_prepare(){
+mkbuild_deps(){
 	if [ ! -f /usr/bin/mk-sbuild ]
 	then
 		#ubuntu-dev-tools ubuntu-archive-keyring
@@ -31,9 +33,9 @@ mkbuild_prepare(){
 	fi
 }
 
-get_mirror_by_dist(){
-	DIST=$1
-	case $DIST in
+get_mirror_by_release(){
+	RELEASE=$1
+	case $RELEASE in
 		sid|jessie|wheezy)
 			echo $DEBMIRROR
 		;;
@@ -43,9 +45,21 @@ get_mirror_by_dist(){
 	esac
 }
 
-get_local_mirror_by_dist(){
-	DIST=$1
-	case $DIST in
+get_component_by_release(){
+	RELEASE=$1
+	case $RELEASE in
+		sid|jessie|wheezy)
+			echo $DEBCOMPONENTS
+		;;
+		trusty|utopic)
+			echo $UBUCOMPONENTS
+		;;
+	esac
+}
+
+get_local_mirror_by_release(){
+	RELEASE=$1
+	case $RELEASE in
 		sid|jessie|wheezy)
 			echo http://localhost/localrepo/debian
 		;;
@@ -59,68 +73,70 @@ get_local_mirror_by_dist(){
 sbuild_generic(){
 	# Config are in /etc/schroot/chroot.d/
 	# Result is in /var/lib/sbuild
-	DIST=$1
+	RELEASE=$1
 	COMPONENTS=${2:-$DEBCOMPONENTS}
 	MIRROR=${3:-$DEBMIRROR}
 	ARCH=${4:-$CURRENT_ARCH}
-	if [ -f /var/lib/sbuild/$DIST-$ARCH.tar.gz2 ]
+	if [ -f /var/lib/sbuild/$RELEASE-$ARCH.tar.gz2 ]
 	then 
 		echo =====================================================
-		echo Already have /var/lib/sbuild/$DIST-$ARCH.tar.gz
+		echo Already have /var/lib/sbuild/$RELEASE-$ARCH.tar.gz
 		echo =====================================================
 	else
 		echo =====================================================
-		echo mk-sbuild $DIST
+		echo mk-sbuild $RELEASE
 		echo sudo /usr/sbin/sbuild-createchroot 
 		echo 	--components="$COMPONENTS"
-		echo 	--make-sbuild-tarball=/var/lib/sbuild/$DIST-$ARCH
-		echo 	$DIST `mktemp -d` $MIRROR
+		echo 	--make-sbuild-tarball=/var/lib/sbuild/$RELEASE-$ARCH
+		echo 	$RELEASE `mktemp -d` $MIRROR
 		echo =====================================================
 		sudo /usr/sbin/sbuild-createchroot \
 			--components="$COMPONENTS" \
-			--make-sbuild-tarball=/var/lib/sbuild/$DIST-$ARCH \
-			$DIST `mktemp -d` $MIRROR
+			--make-sbuild-tarball=/var/lib/sbuild/$RELEASE-$ARCH \
+			$RELEASE `mktemp -d` $MIRROR
 	fi
 }
 
 mkbuild_generic(){
-	DIST=$1
+	RELEASE=$1
 	ARCH=$(dpkg --print-architecture)
 	# Config are in /etc/schroot/chroot.d/
 	# Result is in /var/lib/schroot/chroots/
-	if [ -d x/var/lib/schroot/chroots/$DIST-$ARCH ]
+	if [ -d /var/lib/schroot/chroots/$RELEASE-$ARCH ]
 	then
 		echo =====================================================
-		echo Already have /var/lib/schroot/chroots/$DIST-$ARCH
+		echo Already have /var/lib/schroot/chroots/$RELEASE-$ARCH
 		echo =====================================================
-		echo To CHANGE the golden image: sudo schroot -c source:$DIST-$ARCH -u root
-		echo To ENTER an image snapshot: schroot -c $DIST-$ARCH
-		echo To BUILD within a snapshot: sbuild -A -d $DIST-$ARCH PACKAGE*.dsc
+		echo To CHANGE the golden image: sudo schroot -c source:$RELEASE-$ARCH -u root
+		echo To ENTER an image snapshot: schroot -c $RELEASE-$ARCH
+		echo To BUILD within a snapshot: sbuild -A -d $RELEASE-$ARCH PACKAGE*.dsc
 	else
 		echo =====================================================
-		echo mk-sbuild $DIST
+		echo mk-sbuild $RELEASE
 		echo =====================================================
-		MIRROR=$(get_mirror_by_dist $DIST)
-		mk-sbuild $DIST --debootstrap-mirror=$MIRROR
-		mkbuild_add $DIST
+		MIRROR=$(get_mirror_by_release $RELEASE)
+		mk-sbuild $RELEASE --debootstrap-mirror=$MIRROR
+		mkbuild_add $RELEASE
 	fi
 }
 
 mkbuild_add(){
-	DIST=$1
+	RELEASE=$1
 	ARCH=$(dpkg --print-architecture)
-	MIRROR=$(get_local_mirror_by_dist $DIST)
+	MIRROR=$(get_local_mirror_by_release $RELEASE)
 	curl -s http://localhost/localrepo/botkey.gpg |\
-		sudo schroot -c source:$DIST-$ARCH -u root apt-key add -
-	sudo schroot -c source:$DIST-$ARCH -u root -- /bin/sh -c "echo \"deb $MIRROR $DIST main\" > /etc/apt/sources.list.d/localrepo-$DIST.list"
-	#sudo schroot -c source:$DIST-$ARCH -u root apt-get update
+		sudo schroot -c source:$RELEASE-$ARCH -u root apt-key add -
+	sudo schroot -c source:$RELEASE-$ARCH -u root -- /bin/sh -c "echo \"deb $MIRROR $RELEASE main\" > /etc/apt/sources.list.d/localrepo-$RELEASE.list"
+	#sudo schroot -c source:$RELEASE-$ARCH -u root apt-get update
 }
 
 mkbuild_clean(){
-	DIST=$1
+	RELEASE=$1
 	ARCH=$(dpkg --print-architecture)
-	[ -d /var/lib/schroot/chroots/$DIST-$ARCH ] && \
-		sudo rm -rf /var/lib/schroot/chroots/$DIST-$ARCH
+	[ -d "/var/lib/schroot/chroots/$RELEASE-$ARCH" ] && \
+		sudo rm -rf /var/lib/schroot/chroots/$RELEASE-$ARCH
+	[ -f "/etc/schroot/chroot.d/sbuild-$RELEASE-$ARCH" ] && \
+		sudo rm -f /etc/schroot/chroot.d/sbuild-$RELEASE-$ARCH
 }
 
 schroot_list(){
@@ -135,37 +151,31 @@ schroot_info(){
 
 sbuild_update(){
 	UPDLIST=$(grep '^\[' /etc/schroot/chroot.d/*| cut -d[ -f2 | cut -d] -f1)
-	for DIST in $UPDLIST
+	for RELEASE in $UPDLIST
 	do
 		echo =====================================================
-		echo Updating $DIST
+		echo Updating $RELEASE
 		echo =====================================================
-		sudo sbuild-update -udcar $DIST
+		sudo sbuild-update -udcar $RELEASE
 	done
 }
 
-# Deprecated
-sbuilds_prepare(){
-	sbuild_prepare
-	sbuild_generic sid
-	sbuild_generic jessie
-	sbuild_generic wheezy
-
-	sbuild_generic trusty $UBUCOMPONENTS $UBUMIRROR
-	sbuild_generic utopic $UBUCOMPONENTS $UBUMIRROR
-}
-
-dists_prepare(){
-	mkbuild_prepare
-	for dist in $DISTS
+sbuilds_deps(){
+	sbuild_deps
+	for release in $RELEASES
 	do
-		mkbuild_generic $dist
+		sbuild_generic $release $(get_component_by_release $release) $(get_mirror_by_release $release)
 	done
 }
 
-mkbuild_prepare
+releases_deps(){
+	mkbuild_deps
+	for release in $RELEASES
+	do
+		mkbuild_generic $release
+	done
+}
 
-#mkbuild_clean wheezy
-
-dists_prepare
-sbuild_update
+#mkbuild_clean $CURRENT_RELEASE
+releases_deps
+#sbuild_update
