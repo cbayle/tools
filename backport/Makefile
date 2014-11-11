@@ -5,6 +5,7 @@ DISTRIB=debian
 ARCH=$(shell dpkg --print-architecture)
 BUILDERRESULTDIR=$(CURDIR)/build
 SUFFIX=~grz
+RELSRC=sid
 
 default: docker
 	@echo 'All done'
@@ -32,7 +33,7 @@ preparerepo:
 	[ -d $(REPODIR)/$(DISTRIB)/dists/$(RELEASE) ] || make -C repo
 
 build/done_%.done:
-	@[ -f build/done_$* ] || ./backport.sh $* $(RELEASE) $(ARCH) $(SUFFIX)
+	@[ -f build/done_$* ] || ./backport.sh $* $(RELEASE) $(ARCH) $(SUFFIX) $(RELSRC)
 	make fillrepo
 
 %: build/done_%.done
