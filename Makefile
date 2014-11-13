@@ -11,6 +11,6 @@ clone:
 	do (cd .. ; \
 		if [ ! -d $$repo ] ; \
 		then \
-			 echo git clone https://github.com/cbayle/$$repo.git  ; \
+			 git clone https://github.com/cbayle/$$repo.git  ; \
 		fi ); \
 	done
