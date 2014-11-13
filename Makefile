@@ -1,4 +1,18 @@
-GITREPOS=docker-centos6 docker-debian8 docker-tuleap-base docker-tuleap-buildsrpms tools docker-debian7 docker-tuleap-aio  docker-tuleap-buildrpms  docker-ubuntu tuleap
+GITREPOS=docker-centos6 \
+	docker-debian8 \
+	docker-debian7 \
+	docker-ubuntu \
+	docker-tuleap-base \
+	docker-tuleap-aio  \
+	docker-tuleap-buildrpms  \
+	docker-tuleap-buildsrpms \
+	tuleap \
+	tuleap-debian-build \
+	tuleap-centos-build \
+	tools
+
+GITHUB=git@github.com:
+GITHUB=https://github.com/
 
 update:
 	@find .. -maxdepth 1 -type d -name '[a-z]*' | while read dir ; do echo "====== $$dir ======" ; (cd $$dir ; git pull) ; done
@@ -11,6 +25,6 @@ clone:
 	do (cd .. ; \
 		if [ ! -d $$repo ] ; \
 		then \
-			 git clone https://github.com/cbayle/$$repo.git  ; \
+			 git clone $(GITHUB)cbayle/$$repo.git  ; \
 		fi ); \
 	done
