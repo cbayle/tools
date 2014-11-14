@@ -9,6 +9,7 @@ GITREPOS=docker-centos6 \
 	tuleap \
 	tuleap-debian-build \
 	tuleap-centos-build \
+	jpgraph-tuleap mailman-tuleap viewvc-tuleap openfire-tuleap-plugins \
 	tools
 
 GITHUB=git@github.com:
