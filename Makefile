@@ -18,7 +18,7 @@ update:
 	@find .. -maxdepth 1 -type d -name '[a-z]*' | while read dir ; do echo "====== $$dir ======" ; (cd $$dir ; git pull) ; done
 
 status:
-	@find .. -maxdepth 1 -type d -name '[a-z]*' | while read dir ; do echo "====== $$dir ======" ; (cd $$dir ; git status) ; done
+	@find .. -maxdepth 1 -type d -name '[a-z]*' | while read dir ; do echo "====== $$dir ======" ; (cd $$dir ; if [ -d .git ] ; then git status ; fi) ; done
 
 clone:
 	for repo in $(GITREPOS) ; \
