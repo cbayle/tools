@@ -1,6 +1,6 @@
 # Fillrepo vars
 REPODIR=/var/www/localrepo
-RELEASE=wheezy
+RELEASE=$(shell lsb_release -sc)
 DISTRIB=debian
 ARCH=$(shell dpkg --print-architecture)
 BUILDERRESULTDIR=$(CURDIR)/build
