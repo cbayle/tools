@@ -16,10 +16,48 @@ GITHUB=git@github.com:
 GITHUB=https://github.com/
 
 update:
-	@find .. -maxdepth 1 -type d -name '[a-z]*' | while read dir ; do echo "====== $$dir ======" ; (cd $$dir ; git pull) ; done
+	@find .. -maxdepth 1 -type d -name '[a-z]*' | \
+		while read dir ; do \
+			echo "====== $$dir ======" ; \
+			(cd $$dir ; \
+			if [ -d .git ] ; \
+			then \
+				git pull ; \
+			fi) ; \
+		done
+
+remotes:
+	@find .. -maxdepth 1 -type d -name '[a-z]*' | \
+		while read dir ; do \
+			echo "====== $$dir ======" ; \
+			(cd $$dir ; \
+			if [ -d .git ] ; \
+			then \
+				git remote -v ; \
+			fi) ; \
+		done
+
+showbrances:
+	@find .. -maxdepth 1 -type d -name '[a-z]*' | \
+		while read dir ; do \
+			echo "====== $$dir ======" ; \
+			(cd $$dir ; \
+			if [ -d .git ] ; \
+			then \
+				git branch -va ; \
+			fi) ; \
+		done
 
 status:
-	@find .. -maxdepth 1 -type d -name '[a-z]*' | while read dir ; do echo "====== $$dir ======" ; (cd $$dir ; if [ -d .git ] ; then git status ; fi) ; done
+	@find .. -maxdepth 1 -type d -name '[a-z]*' | \
+		while read dir ; do \
+			echo "====== $$dir ======" ; \
+			(cd $$dir ; \
+			if [ -d .git ] ; \
+			then \
+				git status ; \
+			fi) ; \
+	done
 
 clone:
 	for repo in $(GITREPOS) ; \
@@ -29,3 +67,5 @@ clone:
 			 git clone $(GITHUB)cbayle/$$repo.git  ; \
 		fi ); \
 	done
+
+
