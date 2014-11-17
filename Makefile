@@ -16,7 +16,7 @@ GITHUB=git@github.com:
 GITHUB=https://github.com/
 
 update:
-	@find .. -maxdepth 1 -type d -name '[a-z]*' | \
+	@find .. -maxdepth 1 -type d -name '[a-z]*' | sort | \
 		while read dir ; do \
 			echo "====== $$dir ======" ; \
 			(cd $$dir ; \
@@ -27,7 +27,7 @@ update:
 		done
 
 remotes:
-	@find .. -maxdepth 1 -type d -name '[a-z]*' | \
+	@find .. -maxdepth 1 -type d -name '[a-z]*' | sort | \
 		while read dir ; do \
 			echo "====== $$dir ======" ; \
 			(cd $$dir ; \
@@ -38,7 +38,7 @@ remotes:
 		done
 
 showbrances:
-	@find .. -maxdepth 1 -type d -name '[a-z]*' | \
+	@find .. -maxdepth 1 -type d -name '[a-z]*' | sort | \
 		while read dir ; do \
 			echo "====== $$dir ======" ; \
 			(cd $$dir ; \
