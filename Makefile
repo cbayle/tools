@@ -7,6 +7,7 @@ GITREPOS=docker-centos6 \
 	docker-tuleap-aio-dev  \
 	docker-tuleap-buildrpms  \
 	docker-tuleap-buildsrpms \
+	docker-centos6-mysql55 \
 	tuleap \
 	tuleap-debian-build \
 	tuleap-centos-build \
