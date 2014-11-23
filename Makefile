@@ -4,6 +4,7 @@ GITREPOS=docker-centos6 \
 	docker-ubuntu \
 	docker-tuleap-base \
 	docker-tuleap-aio  \
+	docker-tuleap-aio-dev  \
 	docker-tuleap-buildrpms  \
 	docker-tuleap-buildsrpms \
 	tuleap \
